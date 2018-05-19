@@ -2,18 +2,8 @@
   <div>
     <input type="text" class="task-input" placeholder="Task here" v-model="newTask" @keyup.enter="addTask">
     <transition-group enter-active-class="animated fadeInUp" leave-active-class="animated fadeOutDown">
-      <div v-for="(task, index) in tasksFiltered" :key="task.id" class="task">
-        <div class="task-left">
-          <input type="checkbox" v-model="task.completed">
-          <div v-if="!task.editing" @dblclick="editTask(task)" class="task-label" :class="{ completed : task.completed }">
-            {{ task.title }}
-          </div>
-          <input type="text"  v-model="task.title" v-else v-focus @blur="doneEdit(task)" @keyup.enter="doneEdit(task)" @keyup.esc="cancelEdit(task)" class="task-edit">
-        </div>
-        <div class="remove-task" @click="removeTask(index)">
-            &times;
-        </div>
-      </div>
+      <task v-for="(task, index) in tasksFiltered" :key="task.id" :task="task" :index="index" :checkAll="!anyRemaining" @removedTask="removeTask" @finishedEdit="finishedEdit">
+      </task>
     </transition-group>
 
     <div class="extra-container">
@@ -39,8 +29,12 @@
 </template>
 
 <script>
+import Task from './Task'
 export default {
   name: 'TaskManager',
+  components: {
+    Task,
+  },
   data () {
     return {
       newTask: '',
@@ -101,13 +95,6 @@ export default {
       return this.tasks.filter(task => task.completed).length > 0
     }
   },
-  directives: {
-    focus: {
-      inserted: function (el) {
-        el.focus()
-      }
-    }
-  },
   methods: {
     addTask() {
       if (this.newTask.trim().length == 0) {
@@ -124,19 +111,8 @@ export default {
       this.newTask = ''
       this.idForTask++
     },
-    editTask(task) {
-      this.beforeEditCache = task.title
-      task.editing = true
-    },
-    doneEdit(task) {
-      if (task.title.trim().length == 0) {
-        task.title = this.beforeEditCache
-      }
-      task.editing = false
-    },
-    cancelEdit(task) {
-      task.editing = false
-      task.title = this.beforeEditCache
+    finishedEdit(data) {
+      this.tasks.splice(data.index, 1, data.task)
     },
     removeTask(index) {
       this.tasks.splice(index, 1)
