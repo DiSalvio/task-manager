@@ -2,45 +2,33 @@
   <div>
     <input type="text" class="task-input" placeholder="Task here" v-model="newTask" @keyup.enter="addTask">
     <transition-group enter-active-class="animated fadeInUp" leave-active-class="animated fadeOutDown">
-      <task v-for="(task, index) in tasksFiltered" :key="task.id" :task="task" :index="index" :checkAll="!anyRemaining" @removedTask="removeTask" @finishedEdit="finishedEdit">
+      <task v-for="(task, index) in tasksFiltered" :key="task.id" :task="task" :index="index" :checkAll="!anyRemaining">
       </task>
     </transition-group>
 
-    <div class="extra-container">
-      <div><label><input type="checkbox" :checked="!anyRemaining" @change="checkAllTasks"> Check All </label></div>
-      <div>{{ remaining }} items left</div>
-    </div>
-
-    <div class="extra-container">
-      <div>
-        <button :class="{ active: filter == 'all' }" @click="filter = 'all'">All</button>
-        <button :class="{ active: filter == 'inProgress' }" @click="filter = 'inProgress'">In Progress</button>
-        <button :class="{ active: filter == 'completed' }" @click="filter = 'completed'">Completed</button>
-      </div>
-      <div>
-        <transition name="fade">
-          <button v-if="showClearCompletedButton" @click="clearCompleted">Clear Completed</button>
-        </transition>
-      </div>
-    </div>
-
-
+    <checkAll :remaining="remaining" :anyRemaining="anyRemaining" :showClearCompletedButton="showClearCompletedButton" :completedTasks="completedTasks"></checkAll>
+    <taskFilters></taskFilters>
   </div>
 </template>
 
 <script>
 import Task from './Task'
+import CheckAll from './CheckAll'
+import TaskFilters from './TaskFilters'
+
 export default {
   name: 'TaskManager',
   components: {
     Task,
+    CheckAll,
+    TaskFilters,
   },
-  data () {
+  data() {
     return {
       newTask: '',
       idForTask: 3,
-      beforeEditCache: '',
       filter: 'all',
+      beforeEditCache: '',
       tasks: [
         {
           'id': 1,
@@ -51,13 +39,13 @@ export default {
         {
           'id': 2,
           'title': 'Finish Vue Screencast 2',
-          'completed': false,
+          'completed': true,
           'editing': false,
         },
         {
           'id': 3,
           'title': 'Finish Vue Screencast 3',
-          'completed': false,
+          'completed': true,
           'editing': false,
         },
         {
@@ -74,6 +62,20 @@ export default {
         }
       ]
     }
+  },
+  created() {
+    eventBus.$on('removedTask', (index) => this.removeTask(index))
+    eventBus.$on('finishedEdit', (data) => this.finishedEdit(data))
+    eventBus.$on('checkAllChanged', (checked) => this.checkAllTasks(checked))
+    eventBus.$on('filterChanged', (filter) => this.filter = filter)
+    eventBus.$on('clearedCompleted', () => this.clearCompleted())
+  },
+  beforeDestroy() {
+    eventBus.$off('removedTask', (index) => this.removeTask(index))
+    eventBus.$off('finishedEdit', (data) => this.finishedEdit(data))
+    eventBus.$off('checkAllChanged', (checked) => this.checkAllTasks(checked))
+    eventBus.$off('filterChanged', (filter) => this.filter = filter)
+    eventBus.$off('clearedCompleted', () => this.clearCompleted())
   },
   computed: {
     remaining() {
@@ -92,7 +94,10 @@ export default {
       }
     },
     showClearCompletedButton() {
-      return this.tasks.filter(task => task.completed).length > 0
+      return this.tasksFiltered.filter(task => task.completed).length > 0
+    },
+    completedTasks() {
+      return this.tasks.filter(task => task.completed).length
     }
   },
   methods: {
@@ -117,8 +122,8 @@ export default {
     removeTask(index) {
       this.tasks.splice(index, 1)
     },
-    checkAllTasks(event) {
-      this.tasks.forEach((task) => task.completed = event.target.checked)
+    checkAllTasks(checked) {
+      this.tasks.forEach((task) => task.completed = checked)
     },
     clearCompleted() {
       this.tasks = this.tasks.filter(task => !task.completed)
