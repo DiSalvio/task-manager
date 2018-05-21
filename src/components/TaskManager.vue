@@ -2,11 +2,10 @@
   <div>
     <input type="text" class="task-input" placeholder="Task here" v-model="newTask" @keyup.enter="addTask">
     <transition-group enter-active-class="animated fadeInUp" leave-active-class="animated fadeOutDown">
-      <task v-for="(task, index) in tasksFiltered" :key="task.id" :task="task" :index="index" :checkAll="!anyRemaining">
-      </task>
+      <task v-for="task in tasksFiltered" :key="task.id" :task="task" :checkAll="!anyRemaining"></task>
     </transition-group>
 
-    <checkAll :remaining="remaining" :anyRemaining="anyRemaining" :showClearCompletedButton="showClearCompletedButton" :completedTasks="completedTasks"></checkAll>
+    <checkAll></checkAll>
     <taskFilters></taskFilters>
   </div>
 </template>
@@ -26,79 +25,17 @@ export default {
   data() {
     return {
       newTask: '',
-      idForTask: 3,
-      filter: 'all',
+      idForTask: 6,
       beforeEditCache: '',
-      tasks: [
-        {
-          'id': 1,
-          'title': 'Finish Vue Screencast 1',
-          'completed': true,
-          'editing': false,
-        },
-        {
-          'id': 2,
-          'title': 'Finish Vue Screencast 2',
-          'completed': true,
-          'editing': false,
-        },
-        {
-          'id': 3,
-          'title': 'Finish Vue Screencast 3',
-          'completed': true,
-          'editing': false,
-        },
-        {
-          'id': 4,
-          'title': 'Finish Vue Screencast 4',
-          'completed': false,
-          'editing': false,
-        },
-        {
-          'id': 5,
-          'title': 'Finish Vue Screencast 5',
-          'completed': false,
-          'editing': false,
-        }
-      ]
     }
-  },
-  created() {
-    eventBus.$on('removedTask', (index) => this.removeTask(index))
-    eventBus.$on('finishedEdit', (data) => this.finishedEdit(data))
-    eventBus.$on('checkAllChanged', (checked) => this.checkAllTasks(checked))
-    eventBus.$on('filterChanged', (filter) => this.filter = filter)
-    eventBus.$on('clearedCompleted', () => this.clearCompleted())
-  },
-  beforeDestroy() {
-    eventBus.$off('removedTask', (index) => this.removeTask(index))
-    eventBus.$off('finishedEdit', (data) => this.finishedEdit(data))
-    eventBus.$off('checkAllChanged', (checked) => this.checkAllTasks(checked))
-    eventBus.$off('filterChanged', (filter) => this.filter = filter)
-    eventBus.$off('clearedCompleted', () => this.clearCompleted())
   },
   computed: {
-    remaining() {
-      return this.tasks.filter(task => !task.completed).length
-    },
     anyRemaining() {
-      return this.remaining != 0
+      return this.$store.getters.anyRemaining
     },
     tasksFiltered() {
-      if (this.filter == 'all') {
-        return this.tasks
-      } else if (this.filter == 'inProgress') {
-        return this.tasks.filter(task => !task.completed)
-      } else if (this.filter == 'completed') {
-        return this.tasks.filter(task => task.completed)
-      }
+      return this.$store.getters.tasksFiltered
     },
-    showClearCompletedButton() {
-      return this.tasksFiltered.filter(task => task.completed).length > 0
-    },
-    completedTasks() {
-      return this.tasks.filter(task => task.completed).length
-    }
   },
   methods: {
     addTask() {
@@ -106,28 +43,14 @@ export default {
         return
       }
 
-      this.tasks.push({
+      this.$store.dispatch('addTask', {
         id: this.idForTask,
         title: this.newTask,
-        completed: false,
-        editing: false,
       })
 
       this.newTask = ''
       this.idForTask++
     },
-    finishedEdit(data) {
-      this.tasks.splice(data.index, 1, data.task)
-    },
-    removeTask(index) {
-      this.tasks.splice(index, 1)
-    },
-    checkAllTasks(checked) {
-      this.tasks.forEach((task) => task.completed = checked)
-    },
-    clearCompleted() {
-      this.tasks = this.tasks.filter(task => !task.completed)
-    }
   }
 }
 

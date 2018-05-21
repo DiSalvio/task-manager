@@ -7,7 +7,7 @@
       </div>
       <input type="text"  v-model="title" v-else v-focus @blur="doneEdit()" @keyup.enter="doneEdit()" @keyup.esc="cancelEdit()" class="task-edit">
     </div>
-    <div class="remove-task" @click="removeTask(index)">
+    <div class="remove-task" @click="removeTask(id)">
         &times;
     </div>
   </div>
@@ -19,10 +19,6 @@ export default {
   props: {
     task: {
       type: Object,
-      required: true,
-    },
-    index: {
-      type: Number,
       required: true,
     },
     checkAll: {
@@ -52,8 +48,8 @@ export default {
     }
   },
   methods: {
-    removeTask(index) {
-      eventBus.$emit('removedTask', index)
+    removeTask(id) {
+      this.$store.dispatch('removeTask', id)
     },
     editTask() {
       this.beforeEditCache = this.title
@@ -64,14 +60,11 @@ export default {
         this.title = this.beforeEditCache
       }
       this.editing = false
-      eventBus.$emit('finishedEdit', {
-        'index': this.index,
-        'task': {
-          'id': this.id,
-          'title': this.title,
-          'completed': this.completed,
-          'editing': this.editing,
-        }
+      this.$store.dispatch('updateTask', {
+        'id': this.id,
+        'title': this.title,
+        'completed': this.completed,
+        'editing': this.editing,
       })
     },
     cancelEdit(task) {

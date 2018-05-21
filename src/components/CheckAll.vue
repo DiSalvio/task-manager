@@ -1,7 +1,7 @@
 <template>
   <div class="extra-container">
-    <div v-if="anyRemaining" ><label><input type="checkbox" :checked="!anyRemaining" @change="allChecked"> Check All </label></div>
-    <div v-if="!anyRemaining" ><label><input type="checkbox" :checked="!anyRemaining" @change="allChecked"> Uncheck All </label></div>
+    <div v-if="anyRemaining" ><label><input type="checkbox" :checked="!anyRemaining" @change="checkAll"> Check All </label></div>
+    <div v-if="!anyRemaining" ><label><input type="checkbox" :checked="!anyRemaining" @change="checkAll"> Uncheck All </label></div>
     <button v-if="showClearCompletedButton" @click="clearCompleted">Clear {{ completedTasks }} completed tasks </button>
     <div>{{ remaining }} tasks to complete</div>
   </div>
@@ -10,30 +10,26 @@
 <script>
 export default {
   name: 'CheckAll',
-  props: {
-    remaining: {
-      type: Number,
-      required: true,
+  computed: {
+    remaining() {
+      return this.$store.getters.remaining
     },
-    anyRemaining: {
-      type: Boolean,
-      required: true,
+    anyRemaining() {
+      return this.$store.getters.anyRemaining
     },
-    showClearCompletedButton: {
-      type: Boolean,
-      required: true,
+    showClearCompletedButton() {
+      return this.$store.getters.showClearCompletedButton
     },
-    completedTasks: {
-      type: Number,
-      required: true,
+    completedTasks() {
+      return this.$store.getters.completedTasks
     }
   },
   methods: {
-    allChecked() {
-      eventBus.$emit('checkAllChanged', this.anyRemaining)
+    checkAll(event) {
+      this.$store.dispatch('checkAll', event)
     },
     clearCompleted() {
-      eventBus.$emit("clearedCompleted")
+      this.$store.dispatch('clearCompleted')
     }
   }
 }
