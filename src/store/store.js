@@ -1,42 +1,19 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
+import axios from 'axios'
 
 Vue.use(Vuex)
+
+const instance = axios.create({
+  baseURL: 'https://fierce-coast-28247.herokuapp.com',
+  timeout: 1000,
+  headers: {'Authorization': ''}
+})
 
 export const store = new Vuex.Store({
   state: {
     filter: 'all',
     tasks: [
-      {
-        'id': 1,
-        'title': 'Finish Vue Screencast 1',
-        'completed': true,
-        'editing': false,
-      },
-      {
-        'id': 2,
-        'title': 'Finish Vue Screencast 2',
-        'completed': true,
-        'editing': false,
-      },
-      {
-        'id': 3,
-        'title': 'Finish Vue Screencast 3',
-        'completed': true,
-        'editing': false,
-      },
-      {
-        'id': 4,
-        'title': 'Finish Vue Screencast 4',
-        'completed': true,
-        'editing': false,
-      },
-      {
-        'id': 5,
-        'title': 'Finish Vue Screencast 5',
-        'completed': false,
-        'editing': false,
-      }
     ]
   },
   getters: {
@@ -72,13 +49,13 @@ export const store = new Vuex.Store({
       })
     },
     clearCompleted(state) {
-      store.state.tasks = store.state.tasks.filter(task => !task.completed)
+      state.tasks = state.tasks.filter(task => !task.completed)
     },
     updateFilter(state, filter) {
-      store.state.filter = filter
+      state.filter = filter
     },
     checkAll(state, event) {
-      store.state.tasks.forEach((task) => task.completed = event.target.checked)
+      state.tasks.forEach((task) => task.completed = event.target.checked)
     },
     removeTask(state, id) {
       const index = state.tasks.findIndex(item => item.id == id)
@@ -93,10 +70,30 @@ export const store = new Vuex.Store({
         'editing': task.editing,
       })
     },
+    getTasks(state, tasks) {
+      state.tasks = tasks
+    }
   },
   actions: {
+    getTasks(context) {
+      instance.get('/buckets/1/tasks')
+        .then(response => {
+          context.commit('getTasks', response.data)
+        })
+        .catch(error => {
+          console.log(error)
+        })
+    },
     addTask(context, task) {
-      context.commit('addTask', task)
+      instance.post('/buckets/1/tasks', {
+        title: task.title,
+      })
+        .then(response => {
+          context.commit('addTask', response.data)
+        })
+        .catch(error => {
+          console.log(error)
+        })
     },
     clearCompleted(context) {
       context.commit('clearCompleted')
@@ -108,10 +105,24 @@ export const store = new Vuex.Store({
       context.commit('checkAll', event)
     },
     removeTask(context, id) {
-      context.commit('removeTask', id)
+      instance.delete('/buckets/1/tasks/' + id)
+        .then(response => {
+          context.commit('removeTask', id)
+        })
+        .catch(error => {
+          console.log(error)
+        })
     },
     updateTask(context, task) {
-      context.commit('updateTask', task)
+      instance.patch('/buckets/1/tasks/' + task.id, {
+        title: task.title,
+      })
+        .then(response => {
+          context.commit('updateTask', task)
+        })
+        .catch(error => {
+          console.log(error)
+        })
     },
   }
 })

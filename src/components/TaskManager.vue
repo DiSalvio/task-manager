@@ -29,6 +29,9 @@ export default {
       beforeEditCache: '',
     }
   },
+  created() {
+    this.$store.dispatch('getTasks')
+  },
   computed: {
     anyRemaining() {
       return this.$store.getters.anyRemaining
@@ -36,6 +39,9 @@ export default {
     tasksFiltered() {
       return this.$store.getters.tasksFiltered
     },
+    completed() {
+      return this.$store.getters.completed
+    }
   },
   methods: {
     addTask() {

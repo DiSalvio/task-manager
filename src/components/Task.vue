@@ -31,6 +31,10 @@ export default {
       'id': this.task.id,
       'title': this.task.title,
       'completed': this.task.completed,
+      'status': this.task.status,
+      'description': this.task.description,
+      'started_on': this.task.started_on,
+      'complete_by': this.task.complete_by,
       'editing': this.task.editing,
       'beforeEditCache': this.task.beforeEditCache,
     }
@@ -58,14 +62,15 @@ export default {
     doneEdit() {
       if (this.title.trim().length == 0) {
         this.title = this.beforeEditCache
+      } else {
+        this.$store.dispatch('updateTask', {
+          'id': this.id,
+          'title': this.title,
+          'completed': this.completed,
+          'editing': this.editing,
+        })
       }
       this.editing = false
-      this.$store.dispatch('updateTask', {
-        'id': this.id,
-        'title': this.title,
-        'completed': this.completed,
-        'editing': this.editing,
-      })
     },
     cancelEdit(task) {
       this.editing = false
