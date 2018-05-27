@@ -25,7 +25,7 @@ export default {
   data() {
     return {
       newTask: '',
-      idForTask: 6,
+      idForTask: null,
       beforeEditCache: '',
     }
   },
@@ -55,7 +55,7 @@ export default {
       })
 
       this.newTask = ''
-      this.idForTask++
+      this.idForTask = null
     },
   }
 }

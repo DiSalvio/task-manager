@@ -6,7 +6,7 @@ Vue.use(Vuex)
 
 const instance = axios.create({
   baseURL: 'https://fierce-coast-28247.herokuapp.com',
-  timeout: 1000,
+  timeout: 5000,
   headers: {'Authorization': ''}
 })
 
