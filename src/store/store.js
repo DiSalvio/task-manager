@@ -7,7 +7,7 @@ Vue.use(Vuex)
 const instance = axios.create({
   baseURL: 'https://fierce-coast-28247.herokuapp.com',
   timeout: 5000,
-  headers: {'Authorization': ''}
+  headers: {'Authorization': 'eyJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJleHAiOjE1Mjc0NzUxODV9.4KbthTxAxbTvaWAztx-3G24SV4CS3f2vG7YXPzOcsQM'}
 })
 
 export const store = new Vuex.Store({
@@ -46,6 +46,7 @@ export const store = new Vuex.Store({
         title: task.title,
         completed: false,
         editing: false,
+        showDescription: false,
       })
     },
     clearCompleted(state) {
@@ -68,6 +69,7 @@ export const store = new Vuex.Store({
         'title': task.title,
         'completed': task.completed,
         'editing': task.editing,
+        'showDescription': task.showDescription,
       })
     },
     getTasks(state, tasks) {
@@ -87,6 +89,10 @@ export const store = new Vuex.Store({
     addTask(context, task) {
       instance.post('/buckets/1/tasks', {
         title: task.title,
+        status: task.status,
+        description: task.description,
+        started_on: task.started_on,
+        complete_by: task.complete_by,
       })
         .then(response => {
           context.commit('addTask', response.data)
@@ -116,6 +122,10 @@ export const store = new Vuex.Store({
     updateTask(context, task) {
       instance.patch('/buckets/1/tasks/' + task.id, {
         title: task.title,
+        status: task.status,
+        description: task.description,
+        started_on: task.started_on,
+        complete_by: task.complete_by,
       })
         .then(response => {
           context.commit('updateTask', task)

@@ -2,13 +2,25 @@
   <div class="task">
     <div class="task-left">
       <input type="checkbox" v-model="completed" @change="doneEdit">
-      <div v-if="!editing" @dblclick="editTask()" class="task-label" :class="{ completed : completed }">
+      <div v-if="!editing" @dblclick="editTask()" @click="displayDescription()" class="task-label" :class="{ completed : completed }">
         {{ title }}
       </div>
-      <input type="text"  v-model="title" v-else v-focus @blur="doneEdit()" @keyup.enter="doneEdit()" @keyup.esc="cancelEdit()" class="task-edit">
+      <input type="text"  v-model="title" v-else v-focus  @keyup.enter="doneEdit()" @keyup.esc="cancelEdit()" class="task-edit">
+      <div v-if="!editing" class="task-label">{{ status }}</div>
+      <input type="text" v-model="status" v-else  @keyup.enter="doneEdit()" @keyup.esc="cancelEdit()" class="task-edit">
+      <div v-if="!editing" class="task-label">{{ started_on }}</div>
+      <input type="date" v-model="started_on" v-else  @keyup.enter="doneEdit()" @keyup.esc="cancelEdit()" class="task-edit">
+      <div v-if="!editing" class="task-label">{{ complete_by }}</div>
+      <input type="date" v-model="complete_by" v-else  @keyup.enter="doneEdit()" @keyup.esc="cancelEdit()" class="task-edit">
+      <div class="remove-task" @click="removeTask(id)">
+          &times;
+      </div>
     </div>
-    <div class="remove-task" @click="removeTask(id)">
-        &times;
+    <div>
+      <div v-if="showDescription && !editing" class="task-description">
+        {{ description }}
+      </div>
+      <input type="textarea" v-model="description" v-if="showDescription && editing" @keyup.enter="doneEdit()" @keyup.esc="cancelEdit()">
     </div>
   </div>
 </template>
@@ -36,7 +48,19 @@ export default {
       'started_on': this.task.started_on,
       'complete_by': this.task.complete_by,
       'editing': this.task.editing,
+      'showDescription': this.task.showDescription,
       'beforeEditCache': this.task.beforeEditCache,
+    }
+  },
+  filters: {
+    truncate(description) {
+      if (!description) {
+        return
+      } else if (description.length < 15) {
+        return description
+      } else {
+        return description.slice(0, 15) + "..."
+      }
     }
   },
   watch: {
@@ -66,6 +90,10 @@ export default {
         this.$store.dispatch('updateTask', {
           'id': this.id,
           'title': this.title,
+          'description': this.description,
+          'status': this.status,
+          'started_on': this.started_on,
+          'complete_by': this.complete_by,
           'completed': this.completed,
           'editing': this.editing,
         })
@@ -76,6 +104,9 @@ export default {
       this.editing = false
       this.title = this.beforeEditCache
     },
+    displayDescription() {
+      this.showDescription = !this.showDescription
+    }
   }
 }
 </script>

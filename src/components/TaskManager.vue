@@ -41,7 +41,7 @@ export default {
     },
     completed() {
       return this.$store.getters.completed
-    }
+    },
   },
   methods: {
     addTask() {
@@ -82,6 +82,10 @@ export default {
     align-items: center;
     justify-content: space-between;
     animation-duration: 0.2s;
+  }
+
+  .task-description {
+    font-size: 10px;
   }
 
   .remove-task {
